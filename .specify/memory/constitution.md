@@ -1,55 +1,79 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report:
+- Version change: 1.0.0 → 1.1.0 (MINOR - new principles and sections added)
+- Modified principles: Added Deliverable Focus (VI) and Functional Completeness (VII)
+- Added sections: Project Overview, Constraints, Stakeholders
+- Templates requiring updates: ✅ All checked (plan-template.md, spec-template.md, tasks-template.md)
+- No files flagged for manual follow-up
+- No placeholders deferred
+-->
+
+# Phase I - Todo In-Memory Python Console App Constitution
+
+## Project Overview
+
+**Title**: Phase I - Todo In-Memory Python Console App
+**Objective**: Build a command-line todo application that stores tasks in memory.
+**Scope**:
+- Implement basic todo functionality: Add, Delete, Update, View, Mark Complete
+- Store tasks in memory only (no database)
+- Use Python 3.13+, Claude Code, and Spec-Kit Plus
+- Follow clean code principles and proper Python project structure
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. SDD (Spec-Driven Development) Mandatory
+Every implementation step must follow the Spec -> Plan -> Tasks workflow. No code is written without prior architectural alignment.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. In-Memory Simplicity
+For Phase I, no persistent storage (database/files) is allowed. All state must be managed in-memory, emphasizing clean data structures.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Pythonic Excellence
+Follow PEP 8, use strong typing with Python 3.13 features, and maintain modular code within the `src/` directory.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. CLI First
+The interface is strictly command-line based. Commands (`add-task`, `list-tasks`, `update-task`, `delete-task`, `complete-task`) must be intuitive and follow standard CLI patterns.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Testable by Design
+Features must be architected for easy verification via automated tests or clear CLI outputs.
 
-### [PRINCIPLE_6_NAME]
+### VI. Deliverable Focus
+The project must deliver a GitHub repository containing:
+- Constitution file
+- Specs history folder with phase-specific specs
+- `/src` folder with Python source code
+- README.md with setup instructions
+- CLAUDE.md with Claude Code instructions
 
+### VII. Functional Completeness
+The working console application must demonstrate:
+- Adding tasks with title and description
+- Listing all tasks with status indicators
+- Updating task details
+- Deleting tasks by ID
+- Marking tasks as complete/incomplete
 
-[PRINCIPLE__DESCRIPTION]
+## Technology Stack
+- **Language**: Python 3.13+
+- **Dev Tools**: Claude Code, Spec-Kit Plus
+- **Environment**: win32
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Development Workflow
+1. /sp.specify -> Define requirements.
+2. /sp.plan -> Architect the solution.
+3. /sp.tasks -> Break down into actionable steps.
+4. /sp.implement -> Execute the build.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+## Constraints
+- CLI commands should be descriptive: `add-task`, `delete-task`, `update-task`, `list-tasks`, `complete-task`
+- No persistent storage required
+- All development must use Spec-Kit Plus and Claude Code (no manual coding)
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
-
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## Stakeholders
+- Hackathon Reviewers (GIAIC)
+- Developer Team (Yourself)
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+This constitution supersedes ad-hoc decisions. Changes require re-ratification.
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
-
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.1.0 | **Ratified**: 2026-01-01 | **Last Amended**: 2026-01-01
