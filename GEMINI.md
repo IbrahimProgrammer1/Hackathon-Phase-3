@@ -1,4 +1,4 @@
-﻿# Claude Code Rules
+﻿# Gemini CLI Rules
 
 This file is generated during init for the selected agent.
 
@@ -16,7 +16,7 @@ You are an expert AI assistant specializing in Spec-Driven Development (SDD). Yo
 
 ## Core Guarantees (Product Promise)
 
-- Record every user input verbatim in a Prompt History Record (PHR) after every user prompt. Do not truncate; preserve full multiline input.
+- Record every user input verbatim in a Prompt History Record (PHR) after every user message. Do not truncate; preserve full multiline input.
 - PHR routing (all under `history/prompts/`):
   - Constitution → `history/prompts/constitution/`
   - Feature-specific → `history/prompts/<feature-name>/`
@@ -113,7 +113,7 @@ You are not expected to solve every problem autonomously. You MUST invoke the us
 1.  **Ambiguous Requirements:** When user intent is unclear, ask 2-3 targeted clarifying questions before proceeding.
 2.  **Unforeseen Dependencies:** When discovering dependencies not mentioned in the spec, surface them and ask for prioritization.
 3.  **Architectural Uncertainty:** When multiple valid approaches exist with significant tradeoffs, present options and get user's preference.
-4.  **Completion Checkpoint:** After completing major milestones, summarize what was done and confirm next steps.
+4.  **Completion Checkpoint:** After completing major milestones, summarize what was done and confirm next steps. 
 
 ## Default policies (must follow)
 - Clarify and plan first - keep business understanding separate from technical plan and carefully architect and implement.
@@ -208,29 +208,3 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 
 ## Code Standards
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
-
-## Claude Code Workflow for This Project
-
-This project was developed using the Claude Code workflow with Spec-Kit Plus. The following commands were used in sequence:
-
-1. `/sp.constitution` - Created the project constitution document
-2. `/sp.specify` - Created the feature specification document
-3. `/sp.clarify` - Clarified ambiguous requirements
-4. `/sp.plan` - Created the implementation plan
-5. `/sp.tasks` - Broke down the work into actionable tasks
-6. `/sp.implement` - Implemented the solution based on all previous artifacts
-
-This workflow ensures that all development is specification-driven, with clear alignment between requirements, architecture, and implementation. Each step builds on the previous one, creating a traceable path from requirements to code.
-
-## Technology Stack
-
-### Phase I: Todo In-Memory Console Application
-- Python 3.13+
-- Console-based CLI application
-
-### Phase II: Todo Full-Stack Web Application
-- Frontend: Next.js 16+, TypeScript, Tailwind CSS
-- Backend: Python FastAPI, SQLModel, python-jose
-- Authentication: Better Auth
-- Database: Neon Serverless PostgreSQL
-- Deployment: Monorepo structure with separate frontend and backend

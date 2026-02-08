@@ -1,79 +1,79 @@
 <!--
 Sync Impact Report:
-- Version change: 1.0.0 → 1.1.0 (MINOR - new principles and sections added)
-- Modified principles: Added Deliverable Focus (VI) and Functional Completeness (VII)
-- Added sections: Project Overview, Constraints, Stakeholders
-- Templates requiring updates: ✅ All checked (plan-template.md, spec-template.md, tasks-template.md)
-- No files flagged for manual follow-up
-- No placeholders deferred
+- Version change: 2.1.0 → 3.0.0
+- List of modified principles:
+  - Added: I. AI-as-Interface (Interface layer only, no direct DB access)
+  - Added: II. Tool-Based Execution (Deterministic and auditable AI actions)
+  - Refined: III. Security & Ownership Identity (JWT as single source of truth, enforced for AI)
+  - Refined: IV. Spec-Driven Development (Mandatory Spec-Kit Plus workflow)
+  - Added: V. Progressive Evolution (Phase III builds on Phase II without breaking it)
+  - Added: VI. Isolation of Concerns (Strict separation of AI, Backend, and Data layers)
+- Added sections: System Architecture, Scope & Constraints
+- Templates requiring updates:
+  - ✅ .specify/templates/plan-template.md
+  - ✅ .specify/templates/spec-template.md
+  - ✅ .specify/templates/tasks-template.md
+- Follow-up TODOs: None
 -->
 
-# Phase I - Todo In-Memory Python Console App Constitution
-
-## Project Overview
-
-**Title**: Phase I - Todo In-Memory Python Console App
-**Objective**: Build a command-line todo application that stores tasks in memory.
-**Scope**:
-- Implement basic todo functionality: Add, Delete, Update, View, Mark Complete
-- Store tasks in memory only (no database)
-- Use Python 3.13+, Claude Code, and Spec-Kit Plus
-- Follow clean code principles and proper Python project structure
+# Todo Full-Stack (AI-Powered) Constitution
 
 ## Core Principles
 
-### I. SDD (Spec-Driven Development) Mandatory
-Every implementation step must follow the Spec -> Plan -> Tasks workflow. No code is written without prior architectural alignment.
+### I. AI-as-Interface
+AI is an interface layer, not an authority. It allows authenticated users to interact with tasks via natural language but must not directly access the database or bypass business logic. It operates strictly through defined tools.
 
-### II. In-Memory Simplicity
-For Phase I, no persistent storage (database/files) is allowed. All state must be managed in-memory, emphasizing clean data structures.
+### II. Tool-Based Execution
+The AI agent must translate user intent into explicit, validated tool calls. It does not have free-form access to the backend. All operations must be deterministic, auditable, and mapped to existing API capabilities.
 
-### III. Pythonic Excellence
-Follow PEP 8, use strong typing with Python 3.13 features, and maintain modular code within the `src/` directory.
+### III. Security & Ownership Identity
+JWT remains the single source of truth for user identity. AI requests must include valid tokens. AI cannot fabricate access; cross-user attempts must return 404. AI tools enforce ownership identical to standard REST API requests.
 
-### IV. CLI First
-The interface is strictly command-line based. Commands (`add-task`, `list-tasks`, `update-task`, `delete-task`, `complete-task`) must be intuitive and follow standard CLI patterns.
+### IV. Spec-Driven Development (SDD)
+The project strictly follows the Spec-Kit Plus workflow: Constitution → Specify → Clarify → Plan → Tasks → Implement. No manual coding is permitted. AI behavior and tool contracts must be fully specified before implementation.
 
-### V. Testable by Design
-Features must be architected for easy verification via automated tests or clear CLI outputs.
+### V. Progressive Evolution
+Phase III extends the application by introducing an AI layer without removing, rewriting, or weakening Phase I or Phase II milestones. Previous phase artifacts remain immutable and historically preserved.
 
-### VI. Deliverable Focus
-The project must deliver a GitHub repository containing:
-- Constitution file
-- Specs history folder with phase-specific specs
-- `/src` folder with Python source code
-- README.md with setup instructions
-- CLAUDE.md with Claude Code instructions
+### VI. Isolation of Concerns
+Maintain strict separation between the AI reasoning layer, backend business logic, and data persistence layer. AI-related code is isolated in clearly defined directories to prevent cross-contamination with core services.
 
-### VII. Functional Completeness
-The working console application must demonstrate:
-- Adding tasks with title and description
-- Listing all tasks with status indicators
-- Updating task details
-- Deleting tasks by ID
-- Marking tasks as complete/incomplete
+## System Architecture
 
-## Technology Stack
-- **Language**: Python 3.13+
-- **Dev Tools**: Claude Code, Spec-Kit Plus
-- **Environment**: win32
+### Technology Stack
+- **Frontend**: Next.js 16+ (App Router) with an integrated authenticated chat UI.
+- **Backend**: Python FastAPI with existing REST APIs and new AI tool endpoints.
+- **AI Layer**: LLM-based conversational agent with a tool invocation framework; stateless execution per request.
 
-## Development Workflow
-1. /sp.specify -> Define requirements.
-2. /sp.plan -> Architect the solution.
-3. /sp.tasks -> Break down into actionable steps.
-4. /sp.implement -> Execute the build.
+### Authentication & Authorization
+- Reuses Phase II JWT verification middleware.
+- Backend derives user identity exclusively from JWT claims for all AI-initiated actions.
+- AI cannot infer or assume permissions beyond those granted to the authenticated user.
 
-## Constraints
-- CLI commands should be descriptive: `add-task`, `delete-task`, `update-task`, `list-tasks`, `complete-task`
-- No persistent storage required
-- All development must use Spec-Kit Plus and Claude Code (no manual coding)
+## Scope & Constraints
 
-## Stakeholders
-- Hackathon Reviewers (GIAIC)
-- Developer Team (Yourself)
+### In-Scope (Phase III)
+- Authenticated conversational interface for task interaction.
+- Natural language support for CRUD operations (Create, List, Update, Delete).
+- Translation of intent into validated tool calls.
+
+### Non-Goals
+- AI direct database access or bypass of auth/authz layers.
+- Autonomous agent actions without explicit user intent.
+- Introduction of new core task features beyond existing CRUD.
 
 ## Governance
-This constitution supersedes ad-hoc decisions. Changes require re-ratification.
 
-**Version**: 1.1.0 | **Ratified**: 2026-01-01 | **Last Amended**: 2026-01-01
+### Amendment Procedure
+The constitution supersedes all other practices. Any architectural or principle-level changes require a formal update to this document and a version increment.
+
+### Versioning Policy
+Semantic versioning is used:
+- MAJOR: Backward incompatible governance or principle redefinitions (e.g., Phase III extension).
+- MINOR: New principle or expanded guidance.
+- PATCH: Clarifications and wording fixes.
+
+### Compliance
+All development tasks and code reviews must verify compliance with these principles. Complexity must be justified in implementation plans.
+
+**Version**: 3.0.0 | **Ratified**: 2025-02-08 | **Last Amended**: 2026-02-08
