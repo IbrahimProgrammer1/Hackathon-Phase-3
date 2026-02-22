@@ -14,13 +14,15 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install requirements
+# Copy requirements first for caching
 COPY --chown=user requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application
-COPY --chown=user . .
+# Copy application files
+COPY --chown=user src ./src
+COPY --chown=user main.py .
+COPY --chown=user prompts ./prompts
 
 USER user
 ENV PATH="/home/user/.local/bin:$PATH"
@@ -28,4 +30,5 @@ ENV PATH="/home/user/.local/bin:$PATH"
 # Hugging Face Spaces expect port 7860
 EXPOSE 7860
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860", "--workers", "1"]
+# Use PORT env var (default 7860 for Hugging Face)
+CMD ["python", "-c", "import os; port = int(os.getenv('PORT', '7860')); import uvicorn; from main import app; uvicorn.run(app, host='0.0.0.0', port=port)"]
