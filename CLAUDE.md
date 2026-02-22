@@ -1,236 +1,270 @@
-﻿# Claude Code Rules
+# CLAUDE.md
 
-This file is generated during init for the selected agent.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-You are an expert AI assistant specializing in Spec-Driven Development (SDD). Your primary goal is to work with the architext to build products.
+## Project Overview
 
-## Task context
+This is a multi-phase todo application following Spec-Driven Development (SDD) with Spec-Kit Plus:
 
-**Your Surface:** You operate on a project level, providing guidance to users and executing development tasks via a defined set of tools.
+- **Phase I** (frozen): Python console app in `src/` - in-memory task management
+- **Phase II** (frozen): Full-stack web app with authentication and persistent storage
+- **Phase III** (current): AI-powered conversational interface extending Phase II
 
-**Your Success is Measured By:**
-- All outputs strictly follow the user intent.
-- Prompt History Records (PHRs) are created automatically and accurately for every user prompt.
-- Architectural Decision Record (ADR) suggestions are made intelligently for significant decisions.
-- All changes are small, testable, and reference code precisely.
+**Critical**: Previous phase artifacts are immutable. Never modify Phase I or Phase II code unless explicitly requested.
 
-## Core Guarantees (Product Promise)
+## Development Commands
 
-- Record every user input verbatim in a Prompt History Record (PHR) after every user prompt. Do not truncate; preserve full multiline input.
-- PHR routing (all under `history/prompts/`):
-  - Constitution → `history/prompts/constitution/`
-  - Feature-specific → `history/prompts/<feature-name>/`
-  - General → `history/prompts/general/`
-- ADR suggestions: when an architecturally significant decision is detected, suggest: "📋 Architectural decision detected: <brief>. Document? Run `/sp.adr <title>`." Never auto‑create ADRs; require user consent.
+### Backend (FastAPI)
 
-## Development Guidelines
+```bash
+# Navigate to backend
+cd backend
 
-### 1. Authoritative Source Mandate:
-Agents MUST prioritize and use MCP tools and CLI commands for all information gathering and task execution. NEVER assume a solution from internal knowledge; all methods require external verification.
+# Create/activate virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-### 2. Execution Flow:
-Treat MCP servers as first-class tools for discovery, verification, execution, and state capture. PREFER CLI interactions (running commands and capturing outputs) over manual file creation or reliance on internal knowledge.
+# Install dependencies
+pip install -r requirements.txt
 
-### 3. Knowledge capture (PHR) for Every User Input.
-After completing requests, you **MUST** create a PHR (Prompt History Record).
+# Run development server
+uvicorn main:app --reload --port 8000
 
-**When to create PHRs:**
-- Implementation work (code changes, new features)
-- Planning/architecture discussions
-- Debugging sessions
-- Spec/task/plan creation
-- Multi-step workflows
+# Run tests
+python -m pytest
+python -m pytest backend/tests/test_tasks.py  # Single test file
+python -m pytest -v  # Verbose output
 
-**PHR Creation Process:**
+# Run specific test
+python -m pytest backend/tests/test_tasks.py::test_create_task
+```
 
-1) Detect stage
-   - One of: constitution | spec | plan | tasks | red | green | refactor | explainer | misc | general
+### Frontend (Next.js)
 
-2) Generate title
-   - 3–7 words; create a slug for the filename.
+```bash
+# Navigate to frontend
+cd frontend
 
-2a) Resolve route (all under history/prompts/)
-  - `constitution` → `history/prompts/constitution/`
-  - Feature stages (spec, plan, tasks, red, green, refactor, explainer, misc) → `history/prompts/<feature-name>/` (requires feature context)
-  - `general` → `history/prompts/general/`
+# Install dependencies
+npm install
 
-3) Prefer agent‑native flow (no shell)
-   - Read the PHR template from one of:
-     - `.specify/templates/phr-template.prompt.md`
-     - `templates/phr-template.prompt.md`
-   - Allocate an ID (increment; on collision, increment again).
-   - Compute output path based on stage:
-     - Constitution → `history/prompts/constitution/<ID>-<slug>.constitution.prompt.md`
-     - Feature → `history/prompts/<feature-name>/<ID>-<slug>.<stage>.prompt.md`
-     - General → `history/prompts/general/<ID>-<slug>.general.prompt.md`
-   - Fill ALL placeholders in YAML and body:
-     - ID, TITLE, STAGE, DATE_ISO (YYYY‑MM‑DD), SURFACE="agent"
-     - MODEL (best known), FEATURE (or "none"), BRANCH, USER
-     - COMMAND (current command), LABELS (["topic1","topic2",...])
-     - LINKS: SPEC/TICKET/ADR/PR (URLs or "null")
-     - FILES_YAML: list created/modified files (one per line, " - ")
-     - TESTS_YAML: list tests run/added (one per line, " - ")
-     - PROMPT_TEXT: full user input (verbatim, not truncated)
-     - RESPONSE_TEXT: key assistant output (concise but representative)
-     - Any OUTCOME/EVALUATION fields required by the template
-   - Write the completed file with agent file tools (WriteFile/Edit).
-   - Confirm absolute path in output.
+# Run development server
+npm run dev  # Starts on http://localhost:3000
 
-4) Use sp.phr command file if present
-   - If `.**/commands/sp.phr.*` exists, follow its structure.
-   - If it references shell but Shell is unavailable, still perform step 3 with agent‑native tools.
+# Build for production
+npm run build
 
-5) Shell fallback (only if step 3 is unavailable or fails, and Shell is permitted)
-   - Run: `.specify/scripts/bash/create-phr.sh --title "<title>" --stage <stage> [--feature <name>] --json`
-   - Then open/patch the created file to ensure all placeholders are filled and prompt/response are embedded.
+# Run production build
+npm start
 
-6) Routing (automatic, all under history/prompts/)
-   - Constitution → `history/prompts/constitution/`
-   - Feature stages → `history/prompts/<feature-name>/` (auto-detected from branch or explicit feature context)
-   - General → `history/prompts/general/`
+# Lint
+npm run lint
 
-7) Post‑creation validations (must pass)
-   - No unresolved placeholders (e.g., `{{THIS}}`, `[THAT]`).
-   - Title, stage, and dates match front‑matter.
-   - PROMPT_TEXT is complete (not truncated).
-   - File exists at the expected path and is readable.
-   - Path matches route.
+# Run tests (if configured)
+npm run test
+```
 
-8) Report
-   - Print: ID, path, stage, title.
-   - On any failure: warn but do not block the main command.
-   - Skip PHR only for `/sp.phr` itself.
+### Docker Compose
 
-### 4. Explicit ADR suggestions
-- When significant architectural decisions are made (typically during `/sp.plan` and sometimes `/sp.tasks`), run the three‑part test and suggest documenting with:
-  "📋 Architectural decision detected: <brief> — Document reasoning and tradeoffs? Run `/sp.adr <decision-title>`"
-- Wait for user consent; never auto‑create the ADR.
+```bash
+# Start all services (backend, frontend, PostgreSQL)
+docker-compose up
 
-### 5. Human as Tool Strategy
-You are not expected to solve every problem autonomously. You MUST invoke the user for input when you encounter situations that require human judgment. Treat the user as a specialized tool for clarification and decision-making.
+# Start in detached mode
+docker-compose up -d
 
-**Invocation Triggers:**
-1.  **Ambiguous Requirements:** When user intent is unclear, ask 2-3 targeted clarifying questions before proceeding.
-2.  **Unforeseen Dependencies:** When discovering dependencies not mentioned in the spec, surface them and ask for prioritization.
-3.  **Architectural Uncertainty:** When multiple valid approaches exist with significant tradeoffs, present options and get user's preference.
-4.  **Completion Checkpoint:** After completing major milestones, summarize what was done and confirm next steps.
+# Stop services
+docker-compose down
 
-## Default policies (must follow)
-- Clarify and plan first - keep business understanding separate from technical plan and carefully architect and implement.
-- Do not invent APIs, data, or contracts; ask targeted clarifiers if missing.
-- Never hardcode secrets or tokens; use `.env` and docs.
-- Prefer the smallest viable diff; do not refactor unrelated code.
-- Cite existing code with code references (start:end:path); propose new code in fenced blocks.
-- Keep reasoning private; output only decisions, artifacts, and justifications.
+# Rebuild and start
+docker-compose up --build
+```
 
-### Execution contract for every request
-1) Confirm surface and success criteria (one sentence).
-2) List constraints, invariants, non‑goals.
-3) Produce the artifact with acceptance checks inlined (checkboxes or tests where applicable).
-4) Add follow‑ups and risks (max 3 bullets).
-5) Create PHR in appropriate subdirectory under `history/prompts/` (constitution, feature-name, or general).
-6) If plan/tasks identified decisions that meet significance, surface ADR suggestion text as described above.
+### Quick Start Scripts
 
-### Minimum acceptance criteria
-- Clear, testable acceptance criteria included
-- Explicit error paths and constraints stated
-- Smallest viable change; no unrelated edits
-- Code references to modified/inspected files where relevant
+```bash
+# Start backend (handles venv creation and dependencies)
+./start_backend.sh  # or start_backend.bat on Windows
 
-## Architect Guidelines (for planning)
+# Start frontend (handles npm install)
+./start_frontend.sh  # or start_frontend.bat on Windows
+```
 
-Instructions: As an expert architect, generate a detailed architectural plan for [Project Name]. Address each of the following thoroughly.
+## Architecture
 
-1. Scope and Dependencies:
-   - In Scope: boundaries and key features.
-   - Out of Scope: explicitly excluded items.
-   - External Dependencies: systems/services/teams and ownership.
+### Monorepo Structure
 
-2. Key Decisions and Rationale:
-   - Options Considered, Trade-offs, Rationale.
-   - Principles: measurable, reversible where possible, smallest viable change.
+```
+├── backend/              # FastAPI application
+│   ├── src/
+│   │   ├── api/         # Route handlers (tasks.py, auth.py)
+│   │   ├── models/      # SQLModel database models
+│   │   ├── middleware/  # JWT authentication (auth.py)
+│   │   ├── database/    # Database connection setup
+│   │   └── services/    # Business logic layer
+│   ├── tests/           # pytest tests
+│   ├── main.py          # FastAPI app entry point
+│   └── requirements.txt
+├── frontend/            # Next.js application
+│   ├── src/
+│   │   ├── app/        # App Router pages (auth/, tasks/)
+│   │   ├── components/ # React components
+│   │   ├── lib/        # API client (api.ts), auth (auth.ts)
+│   │   ├── contexts/   # React contexts
+│   │   └── services/   # Business logic
+│   └── package.json
+├── src/                 # Phase I console app (FROZEN)
+└── specs/               # Feature specifications
+```
 
-3. Interfaces and API Contracts:
-   - Public APIs: Inputs, Outputs, Errors.
-   - Versioning Strategy.
-   - Idempotency, Timeouts, Retries.
-   - Error Taxonomy with status codes.
+### Authentication Flow
 
-4. Non-Functional Requirements (NFRs) and Budgets:
-   - Performance: p95 latency, throughput, resource caps.
-   - Reliability: SLOs, error budgets, degradation strategy.
-   - Security: AuthN/AuthZ, data handling, secrets, auditing.
-   - Cost: unit economics.
+1. User logs in via Better Auth → receives JWT token
+2. Frontend stores token in localStorage (see `frontend/src/lib/authStorage.ts`)
+3. All API requests include `Authorization: Bearer <token>` header
+4. Backend middleware (`backend/src/middleware/auth.py`) verifies JWT
+5. User identity extracted from JWT claims (never from request body)
+6. All operations filtered by authenticated `user_id`
 
-5. Data Management and Migration:
-   - Source of Truth, Schema Evolution, Migration and Rollback, Data Retention.
+**Security Model**:
+- Path `user_id` must match JWT `user_id` (enforced in `verify_token_owner`)
+- Cross-user access attempts return 404 (not 403) to avoid information leakage
+- JWT secret stored in `BETTER_AUTH_SECRET` environment variable
 
-6. Operational Readiness:
-   - Observability: logs, metrics, traces.
-   - Alerting: thresholds and on-call owners.
-   - Runbooks for common tasks.
-   - Deployment and Rollback strategies.
-   - Feature Flags and compatibility.
+### API Structure
 
-7. Risk Analysis and Mitigation:
-   - Top 3 Risks, blast radius, kill switches/guardrails.
+All task endpoints follow pattern: `/api/{user_id}/tasks`
 
-8. Evaluation and Validation:
-   - Definition of Done (tests, scans).
-   - Output Validation for format/requirements/safety.
+- `GET /api/{user_id}/tasks` - List user's tasks
+- `POST /api/{user_id}/tasks` - Create task
+- `GET /api/{user_id}/tasks/{id}` - Get specific task
+- `PUT /api/{user_id}/tasks/{id}` - Update task
+- `PATCH /api/{user_id}/tasks/{id}/complete` - Toggle completion
+- `DELETE /api/{user_id}/tasks/{id}` - Delete task
 
-9. Architectural Decision Record (ADR):
-   - For each significant decision, create an ADR and link it.
+Authentication endpoints: `/api/auth/register`, `/api/auth/login`, `/api/auth/forgot-password`
 
-### Architecture Decision Records (ADR) - Intelligent Suggestion
+### Database Schema
 
-After design/architecture work, test for ADR significance:
+**Tasks Table** (`backend/src/models/task_model.py`):
+- `id` (primary key)
+- `user_id` (indexed, foreign key)
+- `title`, `description`, `completed` (indexed)
+- `created_at`, `updated_at`
 
-- Impact: long-term consequences? (e.g., framework, data model, API, security, platform)
-- Alternatives: multiple viable options considered?
-- Scope: cross‑cutting and influences system design?
+**Users Table**: `user_id` (primary key), `email` (indexed), `created_at`
 
-If ALL true, suggest:
-📋 Architectural decision detected: [brief-description]
-   Document reasoning and tradeoffs? Run `/sp.adr [decision-title]`
+**Credentials Table**: `user_id`, `password_hash`
 
-Wait for consent; never auto-create ADRs. Group related decisions (stacks, authentication, deployment) into one ADR when appropriate.
+**Connection**: PostgreSQL via SQLModel ORM. Connection string in `DATABASE_URL` environment variable.
 
-## Basic Project Structure
+## Environment Variables
 
-- `.specify/memory/constitution.md` — Project principles
-- `specs/<feature>/spec.md` — Feature requirements
-- `specs/<feature>/plan.md` — Architecture decisions
-- `specs/<feature>/tasks.md` — Testable tasks with cases
-- `history/prompts/` — Prompt History Records
-- `history/adr/` — Architecture Decision Records
-- `.specify/` — SpecKit Plus templates and scripts
+Create `.env` file in root (see `.env.example`):
 
-## Code Standards
-See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
+```bash
+# Backend
+DATABASE_URL=postgresql://username:password@host:5432/todo_db
+BETTER_AUTH_SECRET=your-super-secret-jwt-key-here
+CORS_ALLOW_ORIGINS=http://localhost:3000
 
-## Claude Code Workflow for This Project
+# Frontend
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+```
 
-This project was developed using the Claude Code workflow with Spec-Kit Plus. The following commands were used in sequence:
+## Spec-Driven Development Workflow
 
-1. `/sp.constitution` - Created the project constitution document
-2. `/sp.specify` - Created the feature specification document
-3. `/sp.clarify` - Clarified ambiguous requirements
-4. `/sp.plan` - Created the implementation plan
-5. `/sp.tasks` - Broke down the work into actionable tasks
-6. `/sp.implement` - Implemented the solution based on all previous artifacts
+This project follows strict SDD with Spec-Kit Plus. Available commands:
 
-This workflow ensures that all development is specification-driven, with clear alignment between requirements, architecture, and implementation. Each step builds on the previous one, creating a traceable path from requirements to code.
+1. `/sp.constitution` - Create/update project constitution
+2. `/sp.specify` - Create feature specification
+3. `/sp.clarify` - Clarify ambiguous requirements
+4. `/sp.plan` - Create implementation plan
+5. `/sp.tasks` - Generate actionable tasks
+6. `/sp.implement` - Execute implementation
+7. `/sp.adr` - Document architectural decisions
 
-## Technology Stack
+**Workflow**: Constitution → Specify → Clarify → Plan → Tasks → Implement
 
-### Phase I: Todo In-Memory Console Application
-- Python 3.13+
-- Console-based CLI application
+**Artifacts Location**:
+- Constitution: `.specify/memory/constitution.md`
+- Specs: `specs/<feature>/spec.md`
+- Plans: `specs/<feature>/plan.md`
+- Tasks: `specs/<feature>/tasks.md`
+- ADRs: `history/adr/`
+- PHRs: `history/prompts/`
 
-### Phase II: Todo Full-Stack Web Application
-- Frontend: Next.js 16+, TypeScript, Tailwind CSS
-- Backend: Python FastAPI, SQLModel, python-jose
-- Authentication: Better Auth
-- Database: Neon Serverless PostgreSQL
-- Deployment: Monorepo structure with separate frontend and backend
+## Key Principles
+
+### Security
+- Never trust `user_id` from request body - always use JWT claims
+- Enforce ownership at database query level (filter by `user_id`)
+- Return 404 for unauthorized access (not 403)
+- Validate all inputs with Pydantic models
+
+### Code Organization
+- Backend: Separate concerns (models, API routes, middleware, services)
+- Frontend: Component-based with clear separation (UI, API client, auth)
+- Phase III AI code must be isolated in dedicated directories
+
+### Testing
+- Backend: pytest with test database (SQLite in-memory for tests)
+- Mock JWT authentication in tests using `unittest.mock.patch`
+- Test ownership enforcement and cross-user access scenarios
+
+### Progressive Evolution
+- Phase III extends Phase II without modifying frozen artifacts
+- Maintain backward compatibility with existing APIs
+- AI layer operates through existing API endpoints (no direct DB access)
+
+## Common Patterns
+
+### Backend: Protected Endpoint
+```python
+@router.get("/tasks")
+def get_tasks(
+    user_id: str,
+    request: Request,
+    token: str = Depends(JWTBearer()),
+    session: Session = Depends(get_session)
+):
+    # Verify token user_id matches path user_id
+    token_user_id = request.state.user.get("user_id")
+    if token_user_id != user_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    # Query with ownership filter
+    statement = select(Task).where(Task.user_id == user_id)
+    return session.exec(statement).all()
+```
+
+### Frontend: API Call with Auth
+```typescript
+import { apiClient } from '@/lib/api';
+
+// API client automatically attaches JWT from localStorage
+const tasks = await apiClient.get<Task[]>(`/${userId}/tasks`);
+```
+
+### Testing: Mock JWT
+```python
+with patch('src.middleware.auth.JWTBearer.__call__') as mock_jwt:
+    mock_jwt.return_value = "mock_token"
+    with patch('src.middleware.auth.JWTBearer.verify_jwt') as mock_verify:
+        mock_verify.return_value = {"user_id": "test-user"}
+        # Make test request
+```
+
+## Deployment
+
+- **Docker**: Use `docker-compose.yml` for local development with PostgreSQL
+- **Production**: Backend expects port 7860 (Hugging Face Spaces compatible)
+- **Database**: Neon Serverless PostgreSQL recommended for production
+
+## Important Notes
+
+- Frontend uses Next.js App Router (not Pages Router)
+- Backend uses SQLModel (not raw SQLAlchemy)
+- Authentication is JWT-based (not session-based)
+- CORS configured via `CORS_ALLOW_ORIGINS` environment variable
+- Database tables auto-created on startup via `lifespan` function in `main.py`

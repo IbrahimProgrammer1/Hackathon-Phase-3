@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Task, taskApi } from '@/lib/api';
 import { AuthService } from '@/lib/auth';
 import TaskUpdateForm from './TaskUpdateForm';
+import { emitTaskEvent } from '@/hooks/useTaskRefresh';
 
 interface TaskActionsProps {
   task: Task;
@@ -33,6 +34,9 @@ export default function TaskActions({ task, onTaskUpdated, onTaskDeleted }: Task
 
     try {
       await taskApi.deleteTask(userId, task.id);
+
+      // T035: Emit task deletion event
+      emitTaskEvent('task_deleted', task.id);
 
       if (onTaskDeleted) {
         onTaskDeleted(task.id);
@@ -64,6 +68,9 @@ export default function TaskActions({ task, onTaskUpdated, onTaskDeleted }: Task
 
     try {
       const updatedTask = await taskApi.toggleTaskCompletion(userId, task.id, !task.completed);
+
+      // T035: Emit task update event
+      emitTaskEvent('task_updated', task.id);
 
       if (onTaskUpdated) {
         onTaskUpdated(updatedTask);

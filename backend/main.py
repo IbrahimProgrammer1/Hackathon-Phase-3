@@ -12,19 +12,24 @@ load_dotenv('.env.local')  # Also load from backend directory
 from src.database import engine
 from src.api.tasks import router as tasks_router
 from src.api.auth import router as auth_router
+from src.api.ai_chat import router as ai_chat_router
 from src.api.error_handlers import add_exception_handlers
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Create database tables on startup
-    print("Creating database tables...")
-    # Import all models to ensure they're registered with SQLModel
-    from src.models.task_model import Task, User, Credential, PasswordResetToken
-    SQLModel.metadata.create_all(engine)
-    print("Database tables created.")
+    print("Checking database connection...")
+    try:
+        # Import all models to ensure they're registered with SQLModel
+        from src.models.task_model import Task, User, Credential, PasswordResetToken
+        SQLModel.metadata.create_all(engine)
+        print("Database tables verified/created.")
+    except Exception as e:
+        print(f"Error during database initialization: {e}")
+        # We don't raise the error here so the app can still start 
+        # and show a health check, allowing Hugging Face to see it's "live"
     yield
-    # Cleanup on shutdown if needed
     print("Shutting down...")
 
 
@@ -58,6 +63,7 @@ app.add_middleware(
 # Include API routers
 app.include_router(tasks_router)
 app.include_router(auth_router)
+app.include_router(ai_chat_router)  # T030: Register AI chat router
 
 # Add exception handlers
 add_exception_handlers(app)

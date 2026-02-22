@@ -3,13 +3,24 @@ import TaskActions from './TaskActions';
 
 interface PremiumTaskCardProps {
   task: Task;
+  /** Sequential position index (0-based) - displayed as 01, 02, 03... */
+  taskIndex: number;
   onTaskCompletion: (task: Task) => void;
   onTaskUpdated: (updatedTask: Task) => void;
   onTaskDeleted: (taskId: number) => void;
 }
 
+/**
+ * Format a number as zero-padded 2-digit string
+ * @example 1 → "01", 10 → "10"
+ */
+function formatSequentialId(index: number): string {
+  return String(index + 1).padStart(2, '0');
+}
+
 export default function PremiumTaskCard({
   task,
+  taskIndex,
   onTaskCompletion,
   onTaskUpdated,
   onTaskDeleted
@@ -35,6 +46,12 @@ export default function PremiumTaskCard({
       <div className={`w-1.5 rounded-l-lg ${priorityColor} transition-all duration-300`}></div>
       <div className="flex-1 pl-5">
         <div className="flex items-start gap-4">
+          {/* T036: Sequential Task ID Badge */}
+          <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[var(--primary)]/[0.1] flex items-center justify-center">
+            <span className="text-sm font-bold text-[var(--primary)]">
+              {formatSequentialId(taskIndex)}
+            </span>
+          </div>
           <div
             className={`checkbox mt-0.5 cursor-pointer w-5 h-5 border-2 rounded-lg flex items-center justify-center transition-all duration-200 ${
               task.completed

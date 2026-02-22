@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { taskApi } from '@/lib/api';
 import { AuthService } from '@/lib/auth';
+import { emitTaskEvent } from '@/hooks/useTaskRefresh';
 
 interface TaskFormProps {
   onTaskCreated?: () => void;
@@ -33,13 +34,16 @@ export default function TaskForm({ onTaskCreated }: TaskFormProps) {
     setError(null);
 
     try {
-      await taskApi.createTask(userId, {
+      const newTask = await taskApi.createTask(userId, {
         title: title.trim(),
         description: description.trim()
       });
 
       setTitle('');
       setDescription('');
+
+      // T035: Emit task creation event for cross-component sync
+      emitTaskEvent('task_created', newTask.id);
 
       if (onTaskCreated) {
         onTaskCreated();

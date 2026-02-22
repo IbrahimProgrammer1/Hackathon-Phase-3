@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { taskApi, Task } from '@/lib/api';
 import { AuthService } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
@@ -10,17 +10,41 @@ import FloatingButton from '@/components/FloatingButton';
 import PremiumHeader from '@/components/PremiumHeader';
 import PremiumEmptyState from '@/components/PremiumEmptyState';
 import PremiumTaskCard from '@/components/PremiumTaskCard';
+import { useTaskRefreshEvents, emitTaskEvent } from '@/hooks/useTaskRefresh';
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const userIdRef = useRef<string | null>(null);
 
   const router = useRouter();
 
   // Get user ID from auth service
   const userId = AuthService.getCurrentUser()?.id;
+  userIdRef.current = userId;
+
+  // T035: Fetch tasks function - extracted for reuse
+  const fetchTasks = useCallback(async () => {
+    const currentUserId = userIdRef.current;
+    if (!currentUserId) return;
+
+    try {
+      setLoading(true);
+      const userTasks = await taskApi.getTasks(currentUserId);
+      setTasks(userTasks);
+    } catch (err: any) {
+      // Check if the error is due to a 401 (unauthorized) or other auth issues
+      if (err.message.includes('401') || err.message.includes('403') || err.message.toLowerCase().includes('unauthorized') || err.message.toLowerCase().includes('forbidden')) {
+        router.push('/auth/login');
+      } else {
+        setError(err.message || 'Failed to fetch tasks');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
 
   useEffect(() => {
     if (!userId) {
@@ -29,26 +53,24 @@ export default function TasksPage() {
       return;
     }
 
-    const fetchTasks = async () => {
-      try {
-        setLoading(true);
-        const userTasks = await taskApi.getTasks(userId);
-        setTasks(userTasks);
-      } catch (err: any) {
-        // Check if the error is due to a 401 (unauthorized) or other auth issues
-        if (err.message.includes('401') || err.message.includes('403') || err.message.toLowerCase().includes('unauthorized') || err.message.toLowerCase().includes('forbidden')) {
-          // Redirect to login if unauthorized or forbidden
-          router.push('/auth/login');
-        } else {
-          setError(err.message || 'Failed to fetch tasks');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchTasks();
-  }, [userId, router]);
+  }, [userId, router, fetchTasks]);
+
+  // T035: Listen for task refresh events from AI Assistant
+  useTaskRefreshEvents({
+    onTaskCreated: () => {
+      console.log('[TasksPage] Task created event received, refreshing...');
+      fetchTasks();
+    },
+    onTaskUpdated: () => {
+      console.log('[TasksPage] Task updated event received, refreshing...');
+      fetchTasks();
+    },
+    onTaskDeleted: () => {
+      console.log('[TasksPage] Task deleted event received, refreshing...');
+      fetchTasks();
+    },
+  });
 
   const handleTaskCreated = () => {
     if (userId) {
@@ -138,10 +160,11 @@ export default function TasksPage() {
             <PremiumEmptyState onCreateTask={toggleFormVisibility} />
           ) : (
             <div className="space-y-5">
-              {tasks.map((task) => (
+              {tasks.map((task, index) => (
                 <PremiumTaskCard
                   key={task.id}
                   task={task}
+                  taskIndex={index}
                   onTaskCompletion={handleTaskCompletion}
                   onTaskUpdated={handleTaskUpdated}
                   onTaskDeleted={handleTaskDeleted}

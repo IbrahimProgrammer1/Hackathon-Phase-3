@@ -1,0 +1,7 @@
+todo_dev.db
+__pycache__/
+*.pyc
+.env
+.env.local
+venv/
+backend.venv/

@@ -22,22 +22,22 @@ class JWTBearer(HTTPBearer):
         if credentials:
             if not credentials.scheme == "Bearer":
                 raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Invalid authentication scheme."
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid authentication scheme. Use 'Bearer <token>'"
                 )
-            token = credentials.credentials
+            token = credentials.credentials.strip()
             token_data = self.verify_jwt(token)
             if not token_data:
                 raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Invalid or expired token."
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid or expired token. Please log in again."
                 )
             # Add user data to request for later use
             request.state.user = token_data
             return token
         else:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
+                status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="No credentials provided."
             )
 
@@ -49,7 +49,10 @@ class JWTBearer(HTTPBearer):
             if user_id is None:
                 return None
             return payload
-        except JWTError as e:
+        except jwt.ExpiredSignatureError:
+            print(f"JWT Error: Token has expired")
+            return None
+        except jwt.JWTError as e:
             print(f"JWT Verification Error: {str(e)}")
             return None
 

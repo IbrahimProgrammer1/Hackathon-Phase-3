@@ -28,6 +28,11 @@ backend/.env.local
 .DS_Store
 Thumbs.db
 
+# Logs
+*.log
+server.log
+uvicorn.log
+
 # Gemini/Claude temporary files
 tmpclaude-*
 .gemini/
@@ -35,3 +40,6 @@ history/prompts/
 
 # Specify/Spec-kit
 .spec-kit/
+
+# Build artifacts
+frontend/.next/standalone/

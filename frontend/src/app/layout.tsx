@@ -5,6 +5,7 @@ import '@fontsource/dm-sans/500.css';
 import '@fontsource/dm-sans/700.css';
 import './globals.css';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import ChatWidget from '@/components/chat/ChatWidget';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,6 +24,7 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased`} suppressHydrationWarning>
         <ThemeProvider>
           {children}
+          <ChatWidget />
         </ThemeProvider>
       </body>
     </html>

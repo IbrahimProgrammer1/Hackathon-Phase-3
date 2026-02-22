@@ -41,6 +41,9 @@ export default function PremiumHeader() {
       .slice(0, 2);
   };
 
+  // T048: Check if chat is enabled via environment variable
+  const isChatEnabled = process.env.NEXT_PUBLIC_CHAT_ENABLED === 'true';
+
   return (
     <header className="bg-gradient-to-b from-[var(--card)] to-[var(--bg)] border-b border-[var(--border)] py-4 px-4 sticky top-0 z-10 shadow-sm">
       <div className="max-w-4xl mx-auto">
@@ -55,6 +58,27 @@ export default function PremiumHeader() {
               <h1 className="text-xl md:text-2xl font-bold text-[var(--text)]">NAFAY</h1>
               <p className="text-xs text-[var(--muted)]">Your productivity companion</p>
             </div>
+          </div>
+
+          {/* T048: Navigation links - conditional chat link */}
+          <div className="flex items-center gap-4">
+            <a
+              href="/tasks"
+              className="text-sm font-medium text-[var(--text)] hover:text-[var(--primary)] transition-colors"
+            >
+              Tasks
+            </a>
+            {isChatEnabled && (
+              <a
+                href="/chat"
+                className="text-sm font-medium text-[var(--text)] hover:text-[var(--primary)] transition-colors flex items-center gap-1"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                Chat
+              </a>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
